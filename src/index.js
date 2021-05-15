@@ -1,27 +1,30 @@
 'use strict';
 
-const codegen = require('swagger-codegen');
-const connect = require('connect');
+const codegen = require('openapi-code-generator').generateCode;
+const templates = require('openapi-code-generator').oas3_templates;
+const cookieParser = require('cookie-parser');
+const express  = require('express');
 const connectIoc = require('connect-ioc');
 const cors = require('cors');
-const debug = require('debug')('swagger-service-skeleton');
+const debug = require('debug')('openapi-service-skeleton');
 const defaults = require('defaults-deep');
+const Enforcer = require('openapi-enforcer');
 const fiddleware = require('fiddleware');
 const fs = require('fs');
-const initializeSwagger = require('swagger-tools').initializeMiddleware;
 const mkdirp = require('mkdirp');
 const path = require('path');
 const query = require('connect-query');
-const errorHandler = require('./middleware/error-handler');
-const redirect = require('./middleware/redirect-handler');
-const templates = require('swagger-template-es6-server');
 const yamljs = require('yamljs');
-const cookieParser = require('cookie-parser');
+const exegesisExpress   = require('exegesis-express');
+const exegesisSwaggerUIPlugin = require('exegesis-plugin-swagger-ui-express');
+const unhandledRouteMissingHandler = require('./middleware/unhandled-route-missing-handler');
+const unhandledRouteErrorHandler = require('./middleware/unhandled-route-error-handler');
+const redirect = require('./middleware/redirect-handler');
 
-/**
+/*
  * Generate the application code in the specified temporary directory.
  */
-function generateApplicationCode(swagger, codegenOptions) {
+function generateApplicationCode(openapi, codegenOptions) {
   debug('Generating application code.');
 
   // Build up the execution parameters for the templates.
@@ -36,7 +39,7 @@ function generateApplicationCode(swagger, codegenOptions) {
         mkdirp.sync(parsed.dir);
         fs.writeFileSync(fullName, content);
       },
-      swagger: JSON.parse(JSON.stringify(swagger)), // Clone to avoid issues
+      openapi: JSON.parse(JSON.stringify(openapi)), // Clone to avoid issues
     });
 
   // Perform the actual code generation
@@ -46,22 +49,28 @@ function generateApplicationCode(swagger, codegenOptions) {
 /**
  * Initialize the application skeleton
  */
-function startSkeletonApplication(options) {
+async function startSkeletonApplication(options) {
   debug('Starting to create application skeleton');
-  const configWithDefaults = defaults(
-    options, {
+
+  let configWithDefaults = defaults(
+    options,
+    {
       redirects: {
         'documentation-from-root': {
           match: /^\/$/,
-          target: '/docs',
+          target: '/API_docs',
         },
       },
       ioc: {
       },
       customMiddleware: {
-        beforeSwagger: [],
-        afterSwagger: [],
-        beforeController: [],
+        beforeOpenAPI: [],
+        afterOpenAPI: [],
+        processFinalRoutes: [
+          // For unhandled routes and error processing
+          unhandledRouteMissingHandler(),
+          unhandledRouteErrorHandler()
+        ],
       },
       codegen: {
         controllerStubFolder: 'controllers',
@@ -69,70 +78,147 @@ function startSkeletonApplication(options) {
         templateSet: templates,
       },
       service: {
-        listenPort: 10010,
+        listenPort: 10020,
+        hostName: null,
       },
       cors: {
       },
-    });
-
-  // If the swagger input is a string, then load it as a filename
-  const swaggerFile = configWithDefaults.service.swagger;
-  const swagger = typeof swaggerFile === 'string' ?
-    yamljs.load(swaggerFile) : swaggerFile;
+    }
+  );
+  // If the openapiFile input is a string, then load it as a filename
+  const openapiFile = configWithDefaults.service.openapi;
+  const openapi = typeof openapiFile === 'string' ? yamljs.load(openapiFile) : openapiFile;
 
   // Create service instances
-  const app = connect();
+  const app = express();
   const ioc = connectIoc(configWithDefaults.ioc);
 
   // Generate custom application code
   generateApplicationCode(
-    swagger,
-    configWithDefaults.codegen);
+    openapi,
+    configWithDefaults.codegen
+  );
 
-  initializeSwagger(swagger, (middleware) => {
-    // Pre-request handling middleware
-    app.use(query());                                    // Query-string parsing
-    app.use(fiddleware.respondJson());                   // res.json(data, status) support.
-    app.use(ioc.middleware);                             // Somersault IoC for controllers.
-    app.use(cors(configWithDefaults.cors));              // Cross-origin
-    app.use(cookieParser());
-    // Custom middleware
-    for (const item of configWithDefaults.customMiddleware.beforeSwagger) {
-      app.use(item);
-    }
+  // DO NOT use the following as the checks  will pass BAD openAPI files!!!!
+  // BAD: oasTools.init_checks(swagger, initcheckFakeCallback);
+  // BAD: const SwaggerParser =  require('@apidevtools/swagger-parser');
+  return Enforcer(openapiFile, { fullResult: true })
+    .then(({ error, warning }) => {
+        if (!error) {
+            if (warning) {
+              // eslint-disable-next-line no-console
+              console.warn(warning);
+            } else {
+              // eslint-disable-next-line no-console
+              debug('No errors with your document');
+            }
+        } else {
+            // eslint-disable-next-line no-console
+            console.error(error);
+            throw new Error(error);
+        }
+    })
+    .then( async () => {
+      //  ====================================================================================
 
-    // Swagger-tools middleware
-    app.use(middleware.swaggerMetadata());
-    app.use(middleware.swaggerValidator());
+      // Pre-request handling middleware
+      app.use(query());                                 // Query-string parsing
+      app.use(fiddleware.respondJson());                   // res.json(data, status) support.
+      app.use(ioc.middleware);                             // Somersault IoC for controllers.
+      app.use(cors(configWithDefaults.cors));              // Cross-origin
+      app.use(cookieParser());
 
-    for (const item of configWithDefaults.customMiddleware.beforeController) {
-      app.use(item);
-    }
+      //  ====================================================================================
 
-    app.use(middleware.swaggerRouter({
-      controllers: path.join(
-        configWithDefaults.codegen.temporaryDirectory,
-        configWithDefaults.codegen.controllerStubFolder),
-    }));
-    app.use(middleware.swaggerUi());
+      // Custom middleware
+      configWithDefaults.customMiddleware.beforeOpenAPI.forEach( (item) => app.use(item));
 
-    // Post-request handling middleware
-    app.use(redirect(configWithDefaults.redirects));      // Redirect / to /docs
+      //  ====================================================================================
 
-    // Custom middleware
-    for (const item of configWithDefaults.customMiddleware.afterSwagger) {
-      app.use(item);
-    }
+      const controllerPath = path.join(process.cwd(), configWithDefaults.codegen.temporaryDirectory, configWithDefaults.codegen.oas_controllerFolder);
+      let configExegesisWithDefaultsOptions = defaults(
+        configWithDefaults.exegesisOptions,
+        {
+          // See https://github.com/exegesis-js/exegesis/blob/master/docs/Options.md
+          allowMissingControllers: false,
+          controllersPattern: "**/*.@(ts|js)",
+          controllers: controllerPath,
+          authenticators: {
+          },
+          plugins: [
+            exegesisSwaggerUIPlugin({
+                // Express app (required)
+                app,
 
-    app.use(errorHandler());                              // When there's an exception.
+                // URL path to expose API docs (default /)
+                path: '/API_docs',
 
-    const server = app.listen(configWithDefaults.service.listenPort);
-    app.close = function closeServer() {
-      server.close();
-    };
-  });
+                // Options to pass to Swagger UI
+                swaggerUIOptions: {
+                   explorer: true
+                }
+            })
+          ]
+        }
+      );
+      const exegesisMiddleware = await exegesisExpress.middleware( openapiFile, configExegesisWithDefaultsOptions);
+      app.use(exegesisMiddleware);
 
-  return app;
+      //  ====================================================================================
+
+      // Custom middleware
+      configWithDefaults.customMiddleware.afterOpenAPI.forEach( (item) => app.use(item));
+
+      // Post-request handling middleware
+      app.use(redirect(configWithDefaults.redirects));      // Redirect / to /docs
+
+      //  ====================================================================================
+
+      // Add missing route and error handlers, unless overridden by app
+      if (configWithDefaults.customMiddleware.processFinalRoutes.length > 0) {
+        configWithDefaults.customMiddleware.processFinalRoutes.forEach( (item) => {
+          app.use(item);
+        });
+      }
+
+      //  ====================================================================================
+
+      debug(`server app.listen() listenPort =  ${configWithDefaults.service.listenPort}, hostName =  ${configWithDefaults.service.hostName ? configWithDefaults.service.hostName : null} )`);
+      const server = app.listen(configWithDefaults.service.listenPort, configWithDefaults.service.hostName ? configWithDefaults.service.hostName : null, () => {
+        debug(`server ready`);
+      });
+      // if (!server.listening){
+      //  debug(`listenPort ${configWithDefaults.service.listenPort} in use!!!`);
+      //  throw new TypeError(`Express server cannot bind to port ${configWithDefaults.service.listenPort} as it is in use!!!`);
+      // }
+      app.close = function closeServer() {
+        server.close();
+      };
+
+      let timeoutId;
+      let intervalId;
+      return new Promise((resolve, reject) => {
+          // Wait up to 1000 ms for express to startup correctly!!!!
+        timeoutId = setTimeout(() => {
+          clearInterval(intervalId);
+          reject(new Error("Server did not startup within timeout period."));
+        }, 10000);
+
+        intervalId = setInterval( () => {
+          if (server.listening) {
+            clearTimeout(timeoutId);
+            clearInterval(intervalId);
+            resolve(app);
+          }
+        }, 50);
+      });
+    })
+    .catch( (error) => {
+      // eslint-disable-next-line no-console
+      console.error(error);
+      throw new Error(error);
+    });
+  // );
 }
 
 module.exports = startSkeletonApplication;
