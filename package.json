@@ -1,6 +1,6 @@
 {
   "name": "openapi-service-skeleton",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0-beta.2",
   "description": "Rapid service-skeleton/prototyping solution for NodeJS/OpenAPI based Microservices.",
   "main": "src/index.js",
   "scripts": {
@@ -38,6 +38,7 @@
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "debug": "^4.3.1",
+    "deep-copy": "^1.4.2",
     "defaults-deep": "^0.2.4",
     "exegesis-express": "^3.0.0",
     "exegesis-plugin-swagger-ui-express": "^1.0.9",
@@ -45,8 +46,8 @@
     "fiddleware": "^0.1.0",
     "glob": "^7.1.7",
     "mkdirp": "^1.0.4",
-    "openapi-enforcer": "^1.14.2",
     "openapi-code-generator": "https://github.com/acotty/openapi-code-generator/releases/download/0.3.0-beta.1/openapi-code-generator-v0.3.0-beta.1.tgz",
+    "openapi-enforcer": "^1.14.2",
     "somersault": "^1.3.0",
     "yamljs": "^0.3.0"
   },
@@ -55,7 +56,7 @@
     "cross-env": "^7.0.3",
     "eslint": "^7.26.0",
     "eslint-config-airbnb": "^18.2.1",
-    "eslint-plugin-import": "^2.23.0",
+    "eslint-plugin-import": "^2.23.2",
     "eslint-plugin-jsx-a11y": "^6.4.1",
     "eslint-plugin-react": "^7.23.2",
     "eslint-plugin-react-hooks": "^4.2.0",
@@ -67,13 +68,10 @@
     "rmdir": "^1.2.0",
     "supertest": "^6.1.3"
   },
-  "peerDependencies": {
-    "openapi-code-generator": "0.3.x"
-  },
   "engines": {
     "node": ">=12"
   },
-  "files":  [
+  "files": [
     "LICENSE",
     "src/**/*",
     "config/**/*",
@@ -86,5 +84,5 @@
     "*.js",
     "*.ts",
     "openapi-code-generator*.tgz"
-  ]  
+  ]
 }

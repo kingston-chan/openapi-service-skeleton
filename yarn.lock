@@ -313,6 +313,13 @@ aggregate-error@^3.0.0:
     clean-stack "^2.0.0"
     indent-string "^4.0.0"
 
+ajv-formats@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/ajv-formats/-/ajv-formats-2.1.0.tgz#96eaf83e38d32108b66d82a9cb0cfa24886cdfeb"
+  integrity sha512-USH2jBb+C/hIpwD2iRjp0pe0k+MvzG0mlSn/FIdCgQhUb9ALPRjt2KIQdfZDS9r0ZIeUAg7gOu9KL0PFqGqr5Q==
+  dependencies:
+    ajv "^8.0.0"
+
 ajv@^6.10.0, ajv@^6.10.2, ajv@^6.12.3, ajv@^6.12.4:
   version "6.12.6"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-6.12.6.tgz#baf5a62e802b07d977034586f8c3baf5adf26df4"
@@ -323,7 +330,7 @@ ajv@^6.10.0, ajv@^6.10.2, ajv@^6.12.3, ajv@^6.12.4:
     json-schema-traverse "^0.4.1"
     uri-js "^4.2.2"
 
-ajv@^8.0.1, ajv@^8.3.0:
+ajv@^8.0.0, ajv@^8.0.1, ajv@^8.3.0:
   version "8.4.0"
   resolved "https://registry.yarnpkg.com/ajv/-/ajv-8.4.0.tgz#48984fdb2ce225cab15795f0772a8d85669075e4"
   integrity sha512-7QD2l6+KBSLwf+7MuYocbWvRPdOu63/trReTLu2KFwkgctnub1auoF+Y1WYcm09CTM7quuscrzqmASaLHC/K4Q==
@@ -1734,6 +1741,11 @@ decode-uri-component@^0.2.0:
   resolved "https://registry.yarnpkg.com/decode-uri-component/-/decode-uri-component-0.2.0.tgz#eb3913333458775cb84cd1a1fae062106bb87545"
   integrity sha1-6zkTMzRYd1y4TNGh+uBiEGu4dUU=
 
+deep-copy@^1.4.2:
+  version "1.4.2"
+  resolved "https://registry.yarnpkg.com/deep-copy/-/deep-copy-1.4.2.tgz#0622719257e4bd60240e401ea96718211c5c4697"
+  integrity sha512-VxZwQ/1+WGQPl5nE67uLhh7OqdrmqI1OazrraO9Bbw/M8Bt6Mol/RxzDA6N6ZgRXpsG/W9PgUj8E1LHHBEq2GQ==
+
 deep-eql@^3.0.1:
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/deep-eql/-/deep-eql-3.0.1.tgz#dfc9404400ad1c8fe023e7da1df1c147c4b444df"
@@ -2186,10 +2198,10 @@ eslint-module-utils@^2.6.1:
     debug "^3.2.7"
     pkg-dir "^2.0.0"
 
-eslint-plugin-import@^2.23.0:
-  version "2.23.0"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-import/-/eslint-plugin-import-2.23.0.tgz#557160f501e4beaefb768fb4165d36eb2a4e543a"
-  integrity sha512-W5v1f7Cbam6BwbSSKtN6+yoUAms07ozbqAEhLOtf5erEqRv7w67PeZuAuBThaUkzdq2GfBx/5GBvxF+NWJshrQ==
+eslint-plugin-import@^2.23.2:
+  version "2.23.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-import/-/eslint-plugin-import-2.23.2.tgz#ee15dd68fc7a1a1ba4c653c734e0d01c100d3484"
+  integrity sha512-LmNoRptHBxOP+nb0PIKz1y6OSzCJlB+0g0IGS3XV4KaKk2q4szqQ6s6F1utVf5ZRkxk/QOTjdxe7v4VjS99Bsg==
   dependencies:
     array-includes "^3.1.3"
     array.prototype.flat "^1.2.4"
@@ -2448,12 +2460,13 @@ exegesis-plugin-swagger-ui-express@^1.0.9:
     swagger-ui-express "4.1.6"
 
 exegesis@^3.0.0:
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/exegesis/-/exegesis-3.0.0.tgz#4d7c89149bb6d34e5e15db79754d992cbc31131c"
-  integrity sha512-YnIGDUbv1xe3LAiS5q3RP7Xk/Ryl6T9yHnvYLGBwA2qU3BBio+ojV2D8NXFLiI+LUY+s+hyXNntB91mY7NDCIQ==
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/exegesis/-/exegesis-3.0.1.tgz#bddcbe29f3672d300e633853e07b0b5ee9305fdb"
+  integrity sha512-2/aFg5tnhS03KejzepeEnc5X7WOvQrv+DGVGvnNfUfOpag7yrlfaJ1a8viQVV9/ZpstCkikhm9IGtRVVa2fCBg==
   dependencies:
     "@apidevtools/json-schema-ref-parser" "^9.0.3"
     ajv "^8.3.0"
+    ajv-formats "^2.1.0"
     body-parser "^1.18.3"
     content-type "^1.0.4"
     deep-freeze "0.0.1"

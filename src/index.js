@@ -8,6 +8,7 @@ const connectIoc = require('connect-ioc');
 const cors = require('cors');
 const debug = require('debug')('openapi-service-skeleton');
 const defaults = require('defaults-deep');
+const dcopy = require('deep-copy')
 const Enforcer = require('openapi-enforcer');
 const fiddleware = require('fiddleware');
 const fs = require('fs');
@@ -52,6 +53,7 @@ function generateApplicationCode(openapi, codegenOptions) {
 async function startSkeletonApplication(options) {
   debug('Starting to create application skeleton');
 
+  const optionsOriganal = dcopy(options);
   let configWithDefaults = defaults(
     options,
     {
@@ -65,12 +67,7 @@ async function startSkeletonApplication(options) {
       },
       customMiddleware: {
         beforeOpenAPI: [],
-        afterOpenAPI: [],
-        processFinalRoutes: [
-          // For unhandled routes and error processing
-          unhandledRouteMissingHandler(),
-          unhandledRouteErrorHandler()
-        ],
+        afterOpenAPI: []
       },
       codegen: {
         controllerStubFolder: 'controllers',
@@ -85,6 +82,22 @@ async function startSkeletonApplication(options) {
       },
     }
   );
+
+  if (!("customMiddleware" in optionsOriganal) || !("processFinalRoutes" in optionsOriganal.customMiddleware)) {
+    defaults(
+      configWithDefaults,
+      {
+        customMiddleware: {
+          processFinalRoutes: [
+            // For unhandled routes and error processing
+            unhandledRouteMissingHandler(),
+            unhandledRouteErrorHandler()
+          ]
+        }
+      }
+    );
+  }
+
   // If the openapiFile input is a string, then load it as a filename
   const openapiFile = configWithDefaults.service.openapi;
   const openapi = typeof openapiFile === 'string' ? yamljs.load(openapiFile) : openapiFile;
