@@ -1,9 +1,7 @@
 # openapi-service-skeleton
 
-[![GitHub version](https://badge.fury.io/gh/acotty%2Fopenapi-service-skeleton.svg)](https://badge.fury.io/gh/acotty%2Fopenapi-service-skeleton)
 [![Prod Dependencies](https://david-dm.org/acotty/openapi-service-skeleton/status.svg)](https://david-dm.org/acotty/openapi-service-skeleton)
 [![Dev Dependencies](https://david-dm.org/acotty/openapi-service-skeleton/dev-status.svg)](https://david-dm.org/acotty/openapi-service-skeleton#info=devDependencies)
-[![Build](https://github.com/acotty/openapi-service-skeleton/actions/workflows/node.js.yml/badge.svg)](https://github.com/acotty/openapi-service-skeleton/actions/workflows/node.js.yml)
 
 [![Build](https://github.com/acotty/openapi-service-skeleton/actions/workflows/node.js.yml/badge.svg)](https://github.com/acotty/openapi-service-skeleton/actions/workflows/node.js.yml)
 [![Build Matrix](http://github-actions.40ants.com/acotty/openapi-service-skeleton/matrix.svg)](https://github.com/acotty/openapi-service-skeleton)
