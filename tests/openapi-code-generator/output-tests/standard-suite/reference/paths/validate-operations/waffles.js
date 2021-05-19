@@ -1,0 +1,6 @@
+Group: waffles
+getWaffleList
+bulkLoadWaffles
+getWaffleById
+updateWaffleById
+getIngredientsOfWaffle

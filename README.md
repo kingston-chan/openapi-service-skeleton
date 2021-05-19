@@ -186,8 +186,6 @@ The following projects are useful reading:
 
     - https://github.com/acotty/opeanapi-service-skeleton-tutorial
         - Tutorial on how to use this package.
-    - openapi-code-generator
-        - Code generation using handlebars templates for swagger API ontracts.
     - somersault
         - IoC for Node.js projects, with support for ES6 classes, arrow functions, static objects and regular functions.
     - connect-ioc

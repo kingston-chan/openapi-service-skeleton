@@ -1,7 +1,5 @@
 'use strict';
 
-const codegen = require('openapi-code-generator').generateCode;
-const templates = require('openapi-code-generator').oas3_templates;
 const cookieParser = require('cookie-parser');
 const express  = require('express');
 const connectIoc = require('connect-ioc');
@@ -21,6 +19,8 @@ const exegesisSwaggerUIPlugin = require('exegesis-plugin-swagger-ui-express');
 const unhandledRouteMissingHandler = require('./middleware/unhandled-route-missing-handler');
 const unhandledRouteErrorHandler = require('./middleware/unhandled-route-error-handler');
 const redirect = require('./middleware/redirect-handler');
+const codegen = require('./openapi-code-generator').generateCode;
+const templates = require('./openapi-code-generator').oas3_templates;
 
 /*
  * Generate the application code in the specified temporary directory.

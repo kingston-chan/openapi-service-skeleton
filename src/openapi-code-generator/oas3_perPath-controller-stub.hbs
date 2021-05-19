@@ -1,0 +1,285 @@
+'use strict';
+
+const {{#lowerFirst}}{{groupKey}}{{/lowerFirst}}Implementation = require('{{#with options}}{{implementationPath}}{{/with}}/{{fileName}}');
+
+/**
+ * Helper function to validate that various attributes of
+ * the request state are valid.
+ * @param {object}    req     - Request object
+ * @param {object}    res     - Response object
+ **/
+function validateOpenAPIRequest(req, res) {
+  // Validate arguments
+  if (!req) {
+    throw new Error('req (Request state) cannot be null');
+  } else if (!res) {
+    throw new Error('res (Response object) cannot be null');
+  } else if (!(req.params)) {
+    throw new Error('req.params (Incoming parameters array) cannot be null');
+  }
+}
+
+/**
+ * Resolve the implementation of this controller
+ * @param {object} impl     - Implementation object
+ * @param {object} req      - HTTP Request
+ * @returns                 - Same object if object, calls function if function
+ **/
+function resolveImplementation(impl, req) {
+  // Validate arguments
+  if (!impl) {
+    throw new Error('Cannot resolve implementation. require() returned null');
+  }
+
+  // If we've got a resolver, then use that.
+  // LEGACY - This was the prebeta connect-ioc convention.
+  if (req && req.resolver && typeof req.resolver === 'function') {
+    return req.resolver(impl);
+  }
+  // Support for connect-ioc
+  if (req.ioc && req.ioc.build && typeof req.ioc.build === 'function') {
+    return req.ioc.build(impl);
+  }
+
+  // Call generator function, if required
+  if (typeof impl === 'function') {
+    // Determine if we are an ES6 class, if so, generate via new()
+    if (/^\s*class\s+/.test(impl.toString())) {
+      return new impl();
+    }
+    return impl();
+  }
+
+  // POJSO.
+  return impl;
+}
+
+{{#each members}}
+
+/**
+ * {{#if summary}}{{summary}}{{else}}{{operationId}}{{/if}}
+ * @remarks {{#if description}}{{description}}{{else}}Operation handler for {{operationId}}{{/if}}
+ * @param {object}  context - The ExegesisContext raw object (context.req - Request object , context.res - Response object
+ **/
+function {{operationId}}(context) {
+  // Validate arguments
+  validateOpenAPIRequest(context.req, context.res);
+
+    {{#if parameters}}
+  // Parse operation parameters.
+      {{#each parameters}}
+        {{#eq required true}}
+          {{#eq in 'path'}}
+  if (context.params.path.{{name}} === null || context.params.path.{{name}} === undefined) {
+    throw new Error('Cannot process {{operationId}}: parameter {{name}} cannot be null.');
+  }
+          {{/eq}}
+          {{#eq in 'query'}}
+  if (context.params.query.{{name}} === null || context.params.query.{{name}} === undefined) {
+    throw new Error('Cannot process {{operationId}}: parameter {{name}} cannot be null.');
+  }
+          {{/eq}}
+        {{else}}
+  // Parameter is optional
+        {{/eq}}
+      {{/each}}
+
+      {{#each parameters}}
+        {{#if schema}}
+          {{#with schema}}
+            {{#withDef $ref ../../../definitionMap}}
+  const {{../../name}}Generator = () => {
+    const TypeDefinition = require('{{#with ../../../../options}}{{defsRelativeToController}}{{/with}}/{{#lowercase}}{{definitionName}}{{/lowercase}}');
+    return new TypeDefinition(context.params.path.{{../../name}});
+  };
+  const {{../../name}} = {{../../name}}Generator();
+            {{else}}
+              {{#eq ../in 'path'}}
+  const {{../name}} = context.params.path.{{../name}};
+              {{/eq}}
+              {{#eq ../in 'query'}}
+  const {{../name}} = context.params.query.{{../name}};
+              {{/eq}}
+            {{/withDef}}
+          {{/with}}
+        {{else}}
+          {{#eq in path}}
+  const {{name}} = context.params.path.{{name}}; // Line 104
+          {{/eq}}
+          {{#eq in query}}
+  const {{name}} = context.params.query.{{name}}; // Line 107
+          {{/eq}}
+        {{/if}}
+      {{/each}}
+    {{else}}
+  // FYI: No parameters found.
+    {{/if}}
+    {{#if requestBody}}
+      {{#with requestBody}}
+  // Parse operation requestBody.
+        {{#eq required true}}
+  if (context.requestBody === null || context.requestBody === undefined) {
+    throw new Error('Cannot process {{operationId}}: requestBody cannot be null.');
+  }
+        {{/eq}}
+
+        {{#if content}}
+            {{#with content}}
+                {{#coalesce 'application/json' '*/*' }}
+                    {{#if schema}}
+                        {{#with schema}}
+                            {{#withDef $ref ../../../../../definitionMap}}
+  const {{#upperFirst}}{{definitionName}}{{/upperFirst}} = require('{{#with ../../../../../../options}}{{defsRelativeToController}}{{/with}}/{{#lowercase}}{{definitionName}}{{/lowercase}}');
+  const typedRequestBodyParam = new {{#upperFirst}}{{definitionName}}{{/upperFirst}}(context.requestBody);
+                            {{else}}
+                                {{#eq type 'array'}}
+  // Result is an array
+  const typedRequestBodyParam = [];
+                                    {{#with items}}
+  for (const resultItem of result) {
+                                        {{#if type}}
+    // Primative type mapping - Copy verbatim.
+    typedRequestBodyParam.push(resultItem);
+                                        {{else}}
+                                            {{#withDef $ref ../../../../../../definitionMap}}
+    // Parse the {{definitionName}} instance.
+    const {{#upperFirst}}{{definitionName}}{{/upperFirst}} = require('{{#with ../../../../../../../options}}{{defsRelativeToController}}{{/with}}/{{#lowercase}}{{definitionName}}{{/lowercase}}');
+    const parsedItem = new {{#upperFirst}}{{definitionName}}{{/upperFirst}}(resultItem);
+    typedRequestBodyParam.push(parsedItem);
+                                            {{else}}
+    throw new Error('Cannot process an array: the item type was not set in the openAPIFile');
+                                           {{/withDef}}
+                                        {{/if}}
+  }
+                                    {{else}}
+  throw new Error('Cannot process an array: the openAPIFile does not define items.');
+                                    {{/with}}
+                                {{else}}
+  // We aren't a simple definition, null or a native array.
+  // Throw an error for the unsupported response.
+  throw new Error('Unknown requestBody type: {{type}}');
+                                {{/eq}}
+                            {{/withDef}}
+
+                        {{/with}}
+                    {{/if}}
+                {{/coalesce}}
+            {{/with}}
+        {{/if}}
+      {{/with}}
+    {{else}}
+    {{/if}}
+
+  // Create responder: This will set the content type, status code and also
+  // terminate the request. Note that you must set x-gulp-openapi-code-generator-outcome
+  // on operations in order to have a mapping here. Enforce typing of the
+  // responses from exegesis-express.
+  const responder = {
+    {{#each responses}}
+      {{#property . "x-gulp-openapi-code-generator-outcome" "resultName"}}
+    // Handle status {{@key}} [{{resultName}}]
+    {{resultName}}: function end{{#upperFirst}}{{resultName}}{{/upperFirst}}(result) {
+        {{#if content}}
+            {{#with content}}
+                {{#coalesce 'application/json' '*/*' }}
+                    {{#if schema}}
+                        {{#with schema}}
+                            {{#withDef $ref ../../../../../definitionMap}}
+      const {{#upperFirst}}{{definitionName}}{{/upperFirst}} = require('{{#with ../../../../../../options}}{{defsRelativeToController}}{{/with}}/{{#lowercase}}{{definitionName}}{{/lowercase}}');
+      const typedResult = new {{#upperFirst}}{{definitionName}}{{/upperFirst}}(result);
+                            {{else}}
+                                {{#eq type 'array'}}
+      // Result is an array
+      const typedResult = [];
+                                    {{#with items}}
+      for (const resultItem of result) {
+                                        {{#if type}}
+        // Primative type mapping - Copy verbatim.
+        typedResult.push(resultItem);
+                                        {{else}}
+                                            {{#withDef $ref ../../../../../../definitionMap}}
+        // Parse the {{definitionName}} instance.
+        const {{#upperFirst}}{{definitionName}}{{/upperFirst}} = require('{{#with ../../../../../../../options}}{{defsRelativeToController}}{{/with}}/{{#lowercase}}{{definitionName}}{{/lowercase}}');
+        const parsedItem = new {{#upperFirst}}{{definitionName}}{{/upperFirst}}(resultItem);
+        typedResult.push(parsedItem);
+                                            {{else}}
+        throw new Error('Cannot process an array: the item type was not set in the openAPIFile');
+                                           {{/withDef}}
+                                        {{/if}}
+      }
+                                    {{else}}
+      throw new Error('Cannot process an array: the openAPIFile does not define items.');
+                                    {{/with}}
+                                {{else}}
+      // We aren't a simple definition, null or a native array.
+      // Throw an error for the unsupported response.
+      throw new Error('Unknown result type: {{type}}');
+                                {{/eq}}
+                            {{/withDef}}
+                        {{/with}}
+      context.res.status({{#eq @key 'default'}}200{{else}}{{@key}}{{/eq}}).json(typedResult);
+                    {{else}}
+                      {{#if type}}
+      // Basic typed result ({{type}})
+      context.res.status( {{#eq @key 'default'}}200{{else}}{{@key}}{{/eq}}).json(result || {},);
+                      {{else}}
+      // Void result
+      if (result) {
+        throw new Error('Should not have any \'result\' for this operation outcome');
+      }
+      context.res.setHeader('Content-Type', 'application/json');
+      context.res.statusCode = {{#eq @key 'default'}}200{{else}}{{@key}}{{/eq}};
+      context.res.end();
+                      {{/if}}
+                  {{/if}}
+                {{/coalesce}}
+            {{/with}}
+        {{else}}
+      // Void result
+      if (result) {
+        throw new Error('Should not have any \'result\' for this operation outcome');
+      }
+      context.res.setHeader('Content-Type', 'application/json');
+      context.res.statusCode = {{#eq @key 'default'}}200{{else}}{{@key}}{{/eq}};
+      context.res.end();
+        {{/if}}
+    },
+      {{else}}
+    // Result code {{@key}} does not have a "x-gulp-openapi-code-generator-outcome
+    // {{@key}} = {{#property . "x-gulp-openapi-code-generator-outcome" propName}}{{else}}Not mapped{{/property}}
+      {{/property}}
+    {{/each}}
+  };
+
+  // Validate implementation presence
+  const impl = resolveImplementation({{#lowerFirst}}{{../groupKey}}{{/lowerFirst}}Implementation, context.req);
+  if (!impl) {
+    throw new Error('Cannot resolve implementation of {{../groupKey}}');
+  } else if (!impl.{{operationId}}) {
+    throw new Error('Implementation is missing operation {{operationId}} for {{../groupKey}}');
+  } else if (typeof impl.{{operationId}} !== 'function') {
+    throw new Error('Implementation is not a function: {{operationId}} for {{../groupKey}}');
+  }
+
+  // Execute, passing the parameters
+  // (variable-list) - All extracted parameters in declaration order.
+  // responder - The responder helper object.
+  // context - The ExegesisContext raw request object
+  return impl.{{operationId}}(
+      {{#each parameters}}
+    {{name}},
+      {{/each}}
+      {{#if requestBody}}
+    typedRequestBodyParam,
+      {{/if}}
+    responder,
+    context
+  );
+}
+{{/each}}
+
+module.exports = {
+{{#each members}}
+  {{operationId}},
+{{/each}}
+};

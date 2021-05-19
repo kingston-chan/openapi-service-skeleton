@@ -16,7 +16,7 @@
 const gulp = require('gulp');
 
 const fs = require('fs');
-const rmdir = require('rmdir');
+const rmdir = require('rimraf');
 
 const tempDir = ".temp";
 const distDir = "dist";

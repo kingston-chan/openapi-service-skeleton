@@ -1,4 +1,9 @@
 {
   "extension": ["js"],
-  "spec": "tests/**/*spec.js"
+  "spec": [
+    // "tests/openapi-code-generator/**/*.spec.js"
+    // "./tests/openapi-code-generator/generate-output-test.spec.js",
+    // "./tests/openapi-code-generator/output-test.spec.js"
+    "./tests/**/*.spec.js"
+  ]
 }
