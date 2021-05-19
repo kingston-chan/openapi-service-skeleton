@@ -5073,9 +5073,9 @@ ono@^4.0.11:
   dependencies:
     format-util "^1.0.3"
 
-"openapi-code-generator@https://github.com/acotty/openapi-code-generator/releases/download/v0.3.0-beta.2/openapi-code-generator-v0.3.0-beta.2.tgz":
-  version "0.3.0-beta.2"
-  resolved "https://github.com/acotty/openapi-code-generator/releases/download/v0.3.0-beta.2/openapi-code-generator-v0.3.0-beta.2.tgz#b4dcbdd7c63366f1d289013ccfb766c1c9e27a5d"
+"openapi-code-generator@https://github.com/acotty/openapi-code-generator/releases/download/v0.3.0-beta.3/openapi-code-generator-v0.3.0-beta.3.tgz":
+  version "0.3.0-beta.3"
+  resolved "https://github.com/acotty/openapi-code-generator/releases/download/v0.3.0-beta.3/openapi-code-generator-v0.3.0-beta.3.tgz#42b50e2464b8ade6570e34bf1aef2f2890482d35"
   dependencies:
     debug "^4.3.1"
     defaults-deep "^0.2.4"
