@@ -43,7 +43,7 @@ describe('Generated Output Testing - definitions and paths', () => {
   });
 
   after(() => {
-    //deleteTempDir();
+    deleteTempDir();
   });
 
   for (const file of globbed) {

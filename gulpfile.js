@@ -18,91 +18,37 @@ const gulp = require('gulp');
 const fs = require('fs');
 const rmdir = require('rimraf');
 
-const tempDir = ".temp";
-const distDir = "dist";
-const distTestDir = "./tests/.temp";
-const coverageDir = './coverage';
-const nycOutputDir = './.nyc_output';
+const tempDirArray = [
+  ".temp",
+  './coverage',
+  './.nyc_output',
+  "dist",
+  "tests/.temp",
+  "tests/openapi-code-generator/output-tests/standard-suite/output"
+  //"tests/openapi-code-generator/generate-output-tests/TBA   ",
+];
 
 gulp.task('clean', () => {
-  try {
-    fs.stat(tempDir, (fsError) => {
-      if (!fsError) {
-        rmdir(tempDir, (err, dirs) => {
-          if (err) {
-            console.log(`Failed to rmdir dirs : ${tempDir}`);
+    for (let i = 0; i < tempDirArray.length; i += 1) {
+      const tempDir = tempDirArray[i];
+      try {
+        fs.stat(tempDir, (fsError) => {
+          if (fsError) {
+            if (fsError.code !== 'ENOENT') {
+              console.error(`ERROR: rmdifs.stat(${tempDir}) erorr: ${fsError}`);
+            }
           } else {
-            console.log(`rmdir dirs : ${dirs}`);
+            rmdir(tempDir, (err) => {
+              if (err) {
+                console.error(`ERROR: Failed to rmdir dirs : ${tempDir}`);
+              }
+            });
           }
         });
+      } catch(err) {
+        console.error(`Clean '${tempDir}' error: '${err}'`);
       }
-    });
-  } catch(err) {
-    console.log(`Clean '${tempDir}' error: '${err}'`);
-  }
+    }
 
-  try {
-    fs.stat(distDir, (fsError) => {
-      if (!fsError) {
-        rmdir(distDir, (err, dirs) =>{
-          if (err) {
-            console.log(`Failed to rmdir dirs : ${distDir}`);
-          } else {
-            console.log(`rmdir dirs : ${dirs}`);
-          }
-        });
-      }
-    });
-  } catch(err) {
-    console.log(`Clean '${distDir}' error: '${err}'`);
-  }
-
-  try {
-    fs.stat(distTestDir, (fsError) => {
-      if (!fsError) {
-        rmdir(distTestDir, (err, dirs) =>{
-          if (err) {
-            console.log(`Failed to rmdir dirs : ${distTestDir}`);
-          } else {
-            console.log(`rmdir dirs : ${dirs}`);
-          }
-        });
-      }
-    });
-  } catch(err) {
-    console.log(`Clean '${distTestDir}' error: '${err}'`);
-  }
-
-  try {
-    fs.stat(coverageDir, (fsError) => {
-      if (!fsError) {
-        rmdir(coverageDir, (err, dirs) => {
-          if (err) {
-            console.log(`Failed to rmdir dirs : ${coverageDir}`);
-          } else {
-            console.log(`rmdir dirs : ${dirs}`);
-          }
-        });
-      }
-    });
-  } catch(err) {
-    console.log(`Clean '${coverageDir}' error: '${err}'`);
-  }
-
-  try {
-    fs.stat(nycOutputDir, (fsError) => {
-      if (!fsError) {
-        rmdir(nycOutputDir, (err, dirs) => {
-          if (err) {
-            console.log(`Failed to rmdir dirs : ${nycOutputDir}`);
-          } else {
-            console.log(`rmdir dirs : ${dirs}`);
-          }
-        });
-      }
-    });
-  } catch(err) {
-    console.log(`Clean '${nycOutputDir}' error: '${err}'`);
-  }
   return Promise.resolve(); // Directory does not exist, but do not stop GULP
 });

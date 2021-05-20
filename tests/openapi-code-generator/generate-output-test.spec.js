@@ -39,7 +39,7 @@ describe('Generated Output Testing - Controllers', () => {
   });
 
   after(() => {
-    //deleteTempDir();
+    deleteTempDir();
   });
 
   for (const file of globbed) {
