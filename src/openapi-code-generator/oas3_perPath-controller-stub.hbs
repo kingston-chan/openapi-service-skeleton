@@ -104,10 +104,10 @@ function {{operationId}}(context) {
           {{/with}}
         {{else}}
           {{#eq in path}}
-  const {{name}} = context.params.path.{{name}}; // Line 104
+  const {{name}} = context.params.path.{{name}};
           {{/eq}}
           {{#eq in query}}
-  const {{name}} = context.params.query.{{name}}; // Line 107
+  const {{name}} = context.params.query.{{name}};
           {{/eq}}
         {{/if}}
       {{/each}}
@@ -133,10 +133,13 @@ function {{operationId}}(context) {
   const typedRequestBodyParam = new {{#upperFirst}}{{definitionName}}{{/upperFirst}}(context.requestBody);
                             {{else}}
                                 {{#eq type 'array'}}
-  // Result is an array
+  // Request body is an array
+  if (!Array.isArray(context.requestBody)) {
+    throw new Error('Cannot process {{operationId}}: requestBody is not an Array.');
+  }
   const typedRequestBodyParam = [];
                                     {{#with items}}
-  for (const resultItem of result) {
+  for (const resultItem of context.requestBody) {
                                         {{#if type}}
     // Primative type mapping - Copy verbatim.
     typedRequestBodyParam.push(resultItem);

@@ -1,4 +1,5 @@
 openapi: 3.0.0
+
 info:
   description: >
     This is an example Swaggerfile describing an API. It describes a few typical
@@ -7,6 +8,11 @@ info:
   title: Waffle Processing Machinery
   license:
     name: MIT
+
+servers:
+  - url: http://waffles.eventualconsistency.net/v1
+  - url: https://waffles.eventualconsistency.net/v1
+
 paths:
   /waffles:
     x-exegesis-controller: waffles
@@ -101,9 +107,6 @@ paths:
                 type: array
                 items:
                   type: string
-servers:
-  - url: http://waffles.eventualconsistency.net/v1
-  - url: https://waffles.eventualconsistency.net/v1
 components:
   schemas:
     Waffle:

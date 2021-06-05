@@ -1,6 +1,6 @@
 {
   "name": "openapi-service-skeleton",
-  "version": "2.0.0-beta.7",
+  "version": "2.0.0-beta.9",
   "description": "Rapid service-skeleton/prototyping solution for NodeJS/OpenAPI based Microservices.",
   "main": "src/index.js",
   "scripts": {

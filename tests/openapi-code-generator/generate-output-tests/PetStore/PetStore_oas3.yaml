@@ -1,9 +1,10 @@
 openapi: 3.0.2
 servers:
-  - url: /v3
+  - url: /
+#   - url: /v3
 info:
   description: |-
-    This is a sample Pet Store Server based on the OpenAPI 3.0 specification.  You can find out more about
+    This is a working Pet Store Server restAPI OpenAPI 3.0 specification.  You can find out more about
     Swagger at [http://swagger.io](http://swagger.io). In the third iteration of the pet store, we've switched to the design first approach!
     You can now help us improve the API whether it's by making changes to the definition itself or to the code.
     That way, with time, we can improve the API in general, and expose some of the new features in OAS3.
@@ -16,6 +17,11 @@ info:
   license:
     name: Apache 2.0 for OpenAPI yaml file
     url: 'http://www.apache.org/licenses/LICENSE-2.0.html'
+
+externalDocs:
+  description: Find out more about Swagger
+  url: 'http://swagger.io'
+
 tags:
   - name: pet
     description: Everything about your Pets
@@ -23,13 +29,17 @@ tags:
     description: Operations about user
   - name: user
     description: Access to Petstore orders
+  - name: address
+    description: Operations relating to address
+  - name: logmessage
+    description: Operations relating to logged messages
 
 
 # Apply the following to all of the API's. Add additional security acess to this on a single API basis
-security:
-#  - api_key: []
-  - petstoreAuthorise:
-      - read:pets
+# security:
+# #  - api_key: []
+#   - petstoreAuthorise:
+#       - read:pets
 
 paths:
   /pet:
@@ -40,9 +50,9 @@ paths:
       summary: Add a new pet to the store
       description: Add a new pet to the store
       operationId: addPet
-      security:
-        - petstoreAuthorise:
-            - 'write:pets'
+      # security:
+      #   - petstoreAuthorise:
+      #       - 'write:pets'
       requestBody:
         description: Create a new pet in the store
         required: true
@@ -50,9 +60,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Pet'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Pet'
       responses:
         '200':
           description: Successful operation
@@ -61,21 +68,35 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pet'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/Pet'
+        '400':
+          description: Invalid ID supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
         '405':
           description: Invalid input
           x-gulp-openapi-code-generator-outcome: badInputError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     put:
       tags:
         - pet
       summary: Update an existing pet
       description: Update an existing pet by Id
       operationId: updatePet
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       requestBody:
         description: Update an existent pet in the store
         required: true
@@ -83,18 +104,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Pet'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Pet'
       responses:
         '200':
           description: Successful operation
           x-gulp-openapi-code-generator-outcome: success
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Pet'
-            application/x-www-form-urlencoded:
               schema:
                 $ref: '#/components/schemas/Pet'
         '400':
@@ -106,6 +121,20 @@ paths:
         '405':
           description: Validation exception
           x-gulp-openapi-code-generator-outcome: badInputError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /pet/findByStatus:
     x-exegesis-controller: pet
@@ -121,7 +150,6 @@ paths:
           in: query
           description: Status values that need to be considered for filter
           required: false
-          explode: true
           schema:
             type: string
             enum:
@@ -139,14 +167,23 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Pet'
-            application/x-www-form-urlencoded:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
         '400':
           description: Invalid status value
           x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /pet/findByTags:
     x-exegesis-controller: pet
@@ -164,7 +201,6 @@ paths:
           in: query
           description: Tags to filter by
           required: true
-          explode: true
           schema:
             type: array
             items:
@@ -179,16 +215,25 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Pet'
-            application/x-www-form-urlencoded:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Pet'
         '400':
           description: Invalid tag value
           x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  '/pet/{petId}':
+  /pet/{petId}:
     x-exegesis-controller: pet
     get:
       tags:
@@ -213,15 +258,26 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Pet'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/Pet'
         '400':
           description: Invalid ID supplied
           x-gulp-openapi-code-generator-outcome: badRequestError
         '404':
           description: Pet not found
           x-gulp-openapi-code-generator-outcome: notFoundError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     post:
       tags:
@@ -229,9 +285,9 @@ paths:
       summary: Updates a pet in the store with form data
       description: ''
       operationId: updatePetWithForm
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       parameters:
         - name: petId
           in: path
@@ -251,9 +307,26 @@ paths:
           schema:
             type: string
       responses:
+        '400':
+          description: Invalid ID supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
         '405':
           description: Invalid input
           x-gulp-openapi-code-generator-outcome: badInputError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     delete:
       tags:
@@ -261,9 +334,9 @@ paths:
       summary: Deletes a pet
       description: ''
       operationId: deletePet
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       parameters:
         - name: petId
           in: path
@@ -279,25 +352,36 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/Pet'
         '400':
           description: Invalid pet value
           x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  '/pet/{petId}/uploadImage':
-    x-exegesis-controller: pet
+  /pet/{petId}/uploadImage:
+    x-exegesis-controller: petimage
     post:
       tags:
         - pet
       summary: uploads an image
       description: ''
-      operationId: uploadFile
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      operationId: uploadPetImage
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       parameters:
         - name: petId
           in: path
@@ -318,10 +402,6 @@ paths:
             schema:
               type: string
               format: binary
-          application/x-www-form-urlencoded:
-            schema:
-              type: string
-              format: binary
       responses:
         '200':
           description: successful operation
@@ -329,10 +409,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
-            application/x-www-form-urlencoded:
+                $ref: '#/components/schemas/Pet'
+        '400':
+          description: Invalid ID supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
               schema:
-                $ref: '#/components/schemas/ApiResponse'
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /store/inventory:
     x-exegesis-controller: store
@@ -341,7 +435,7 @@ paths:
         - store
       summary: Returns pet inventories by status
       description: Returns a map of status codes to quantities
-      operationId: getInventory
+      operationId: getStoreInventory
       #security: # No additional security for this API, so uses global security settings
       responses:
         '200':
@@ -354,12 +448,23 @@ paths:
                 additionalProperties:
                   type: integer
                   format: int32
-            application/x-www-form-urlencoded:
+        '400':
+          description: Invalid ID supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
               schema:
-                type: object
-                additionalProperties:
-                  type: integer
-                  format: int32
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   /store/order:
     x-exegesis-controller: store
@@ -368,16 +473,13 @@ paths:
         - store
       summary: Place an order for a pet
       description: Place a new order in the store
-      operationId: placeOrder
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      operationId: placeStoreOrder
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/Order'
-          application/x-www-form-urlencoded:
             schema:
               $ref: '#/components/schemas/Order'
       responses:
@@ -388,13 +490,28 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/Order'
+        '400':
+          description: Invalid ID supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
         '405':
           description: Invalid input
           x-gulp-openapi-code-generator-outcome: badInputError
-  '/store/order/{orderId}':
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /store/order/{orderId}:
     x-exegesis-controller: store
     get:
       tags:
@@ -403,7 +520,7 @@ paths:
       description: >-
         For valid response try integer IDs with value <= 5 or > 10. Other values
         will generated exceptions
-      operationId: getOrderById
+      operationId: getStoreOrderById
       #security: # No additional security for this API, so uses global security settings
       parameters:
         - name: orderId
@@ -421,15 +538,27 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Order'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/Order'
         '400':
           description: Invalid ID supplied
           x-gulp-openapi-code-generator-outcome: badRequestError
         '404':
           description: Order not found
           x-gulp-openapi-code-generator-outcome: notFoundError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     delete:
       tags:
         - store
@@ -437,10 +566,10 @@ paths:
       description: >-
         For valid response try integer IDs with value < 1000. Anything above
         1000 or nonintegers will generate API errors
-      operationId: deleteOrder
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      operationId: deleteStoreOrder
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       parameters:
         - name: orderId
           in: path
@@ -456,6 +585,21 @@ paths:
         '404':
           description: Order not found
           x-gulp-openapi-code-generator-outcome: orderNotFoundError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /user:
     x-exegesis-controller: user
     post:
@@ -463,19 +607,17 @@ paths:
         - user
       summary: Create user
       description: This can only be done by the logged in user.
-      operationId: createUser
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      operationId: addUser
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       requestBody:
+        description: Created user object
+        required: true
         content:
           application/json:
             schema:
               $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
-        description: Created user object
       responses:
         '200':
           description: successful operation
@@ -484,29 +626,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-            application/x-www-form-urlencoded:
+        '400':
+          description: Invalid ID supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
               schema:
-                $ref: '#/components/schemas/User'
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /user/createWithList:
+  /user/createUserArray:
     x-exegesis-controller: user
     post:
       tags:
         - user
       summary: Creates list of users with given input array
       description: 'Creates list of users with given input array'
-      operationId: createUsersWithListInput
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      operationId: addUserArray
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       requestBody:
+        description: Created user array object
+        required: true
         content:
           application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
             schema:
               type: array
               items:
@@ -519,13 +672,260 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
-            application/x-www-form-urlencoded:
+        '400':
+          description: Invalid ID supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /user/{userId}:
+    x-exegesis-controller: user
+    get:
+      tags:
+        - user
+      summary: Find user by ID
+      description: Returns a single user
+      operationId: getUserById
+      #security: # No additional security for this API, so uses global security settings
+      parameters:
+        - name: userId
+          in: path
+          description: ID of user to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          x-gulp-openapi-code-generator-outcome: success
+          content:
+            application/json:
               schema:
                 $ref: '#/components/schemas/User'
-        default:
+        '400':
+          description: Invalid ID supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '404':
+          description: User not found
+          x-gulp-openapi-code-generator-outcome: notFoundError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      tags:
+        - user
+      summary: Update user
+      description: This can only be done by the logged in user.
+      operationId: updateUserbyID
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
+      #       - admin:pets
+      parameters:
+        - name: userId
+          in: path
+          description: ID of user to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        description: Update an existent user in the store
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
           description: successful operation
+          x-gulp-openapi-code-generator-outcome: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid ID supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUserbyUserID
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
+      #       - admin:pets
+      parameters:
+        - name: userId
+          in: path
+          description: ID of user to return
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: successful operation
+          x-gulp-openapi-code-generator-outcome: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '404':
+          description: User not found
+          x-gulp-openapi-code-generator-outcome: notFoundError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /user/login:
+
+  /user/name/{userName}:
+    x-exegesis-controller: user
+    get:
+      tags:
+        - user
+      summary: Get user by user name
+      description: ''
+      operationId: getUserByUserName
+      # security:
+      #   - petstoreAuthorise:
+      #       - admin:pets
+      parameters:
+        - name: userName
+          in: path
+          description: 'The userName that needs to be fetched.'
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          x-gulp-openapi-code-generator-outcome: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '404':
+          description: User not found
+          x-gulp-openapi-code-generator-outcome: notFoundError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      tags:
+        - user
+      summary: Delete user
+      description: This can only be done by the logged in user.
+      operationId: deleteUserbyUserName
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
+      #       - admin:pets
+      parameters:
+        - name: userName
+          in: path
+          description: The name that needs to be deleted
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          x-gulp-openapi-code-generator-outcome: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid username supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '404':
+          description: User not found
+          x-gulp-openapi-code-generator-outcome: notFoundError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /user/login/{username}/{password}:
     x-exegesis-controller: user
     get:
       tags:
@@ -536,15 +936,15 @@ paths:
       #security: # No additional security for this API, so uses global security settings
       parameters:
         - name: username
-          in: query
+          in: path
           description: The user name for login
-          required: false
+          required: true
           schema:
             type: string
         - name: password
-          in: query
+          in: path
           description: The password for login in clear text
-          required: false
+          required: true
           schema:
             type: string
       responses:
@@ -566,12 +966,24 @@ paths:
             application/json:
               schema:
                 type: string
-            application/x-www-form-urlencoded:
-              schema:
-                type: string
         '400':
           description: Invalid username/password supplied
           x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /user/logout:
     x-exegesis-controller: user
     get:
@@ -586,97 +998,24 @@ paths:
         default:
           description: successful operation
           x-gulp-openapi-code-generator-outcome: success
-  '/user/{username}':
-    x-exegesis-controller: user
-    get:
-      tags:
-        - user
-      summary: Get user by user name
-      description: ''
-      operationId: getUserByName
-      security:
-        - petstoreAuthorise:
-            - admin:pets
-      parameters:
-        - name: username
-          in: path
-          description: 'The name that needs to be fetched. Use user1 for testing. '
-          required: true
-          schema:
-            type: string
-      responses:
-        '200':
-          description: successful operation
-          x-gulp-openapi-code-generator-outcome: success
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/User'
-            application/x-www-form-urlencoded:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
               schema:
-                $ref: '#/components/schemas/User'
-        '400':
-          description: Invalid username supplied
-          x-gulp-openapi-code-generator-outcome: badRequestError
-        '404':
-          description: User not found
-          x-gulp-openapi-code-generator-outcome: notFoundError
-    put:
-      tags:
-        - user
-      summary: Update user
-      description: This can only be done by the logged in user.
-      operationId: updateUser
-      security:
-        - petstoreAuthorise:
-            - write:pets
-            - admin:pets
-      parameters:
-        - name: username
-          in: path
-          description: name that need to be deleted
-          required: true
-          schema:
-            type: string
-      requestBody:
-        description: Update an existent user in the store
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/User'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/User'
-      responses:
-        default:
-          description: successful operation
-          x-gulp-openapi-code-generator-outcome: success
+                $ref: '#/components/schemas/ErrorResponse'
 
-    delete:
-      tags:
-        - user
-      summary: Delete user
-      description: This can only be done by the logged in user.
-      operationId: deleteUser
-      security:
-        - petstoreAuthorise:
-            - write:pets
-            - admin:pets
-      parameters:
-        - name: username
-          in: path
-          description: The name that needs to be deleted
-          required: true
-          schema:
-            type: string
-      responses:
-        '400':
-          description: Invalid username supplied
-          x-gulp-openapi-code-generator-outcome: badRequestError
-        '404':
-          description: User not found
-          x-gulp-openapi-code-generator-outcome: notFoundError
-  /Address:
+
+
+  /address:
     x-exegesis-controller: address
     post:
       tags:
@@ -684,9 +1023,9 @@ paths:
       summary: Add a new address to the store
       description: Add a new address to the store
       operationId: addAddress
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       requestBody:
         description: Create a new address in the store
         required: true
@@ -694,9 +1033,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Address'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Address'
       responses:
         '200':
           description: Successful operation
@@ -705,21 +1041,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Address'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/Address'
+        '400':
+          description: Invalid ID supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
         '405':
           description: Invalid input
           x-gulp-openapi-code-generator-outcome: badInputError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     put:
       tags:
         - address
       summary: Update an existing address
       description: Update an existing address by addressId
       operationId: updateAddress
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       requestBody:
         description: Update an existing address in the store
         required: true
@@ -727,18 +1078,12 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/Address'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/Address'
       responses:
         '200':
           description: Successful operation
           x-gulp-openapi-code-generator-outcome: success
           content:
             application/json:
-              schema:
-                $ref: '#/components/schemas/Address'
-            application/x-www-form-urlencoded:
               schema:
                 $ref: '#/components/schemas/Address'
         '400':
@@ -750,8 +1095,22 @@ paths:
         '405':
           description: Validation exception
           x-gulp-openapi-code-generator-outcome: badInputError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-  /Address/{addressId}:
+  /address/{addressId}:
     x-exegesis-controller: address
     get:
       tags:
@@ -776,24 +1135,36 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Address'
-            application/x-www-form-urlencoded:
-              schema:
-                $ref: '#/components/schemas/Address'
         '400':
           description: Invalid addressID supplied
           x-gulp-openapi-code-generator-outcome: badRequestError
         '404':
           description: Address not found
           x-gulp-openapi-code-generator-outcome: notFoundError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
     delete:
       tags:
         - address
       summary: Deletes an address
       description: 'Deletes an address in the store'
       operationId: deleteAddress
-      security:
-        - petstoreAuthorise:
-            - write:pets
+      # security:
+      #   - petstoreAuthorise:
+      #       - write:pets
       parameters:
         - name: addressId
           in: path
@@ -803,13 +1174,100 @@ paths:
             type: integer
             format: int64
       responses:
+        '200':
+          description: successful operation
+          x-gulp-openapi-code-generator-outcome: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Address'
         '400':
           description: Invalid address value
           x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
-externalDocs:
-  description: Find out more about Swagger
-  url: 'http://swagger.io'
+  /logMessage:
+    x-exegesis-controller: logmessage
+
+    post:
+      tags:
+        - logmessage
+      summary: log a message
+      operationId: addLogMessage
+      requestBody:
+        description: Create a new log message entry
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogMessageEntry'
+      responses:
+        '200':
+          description: successful operation
+          x-gulp-openapi-code-generator-outcome: success
+        '400':
+          description: Invalid data supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    get:
+      tags:
+        - logmessage
+      summary: get all messages
+      operationId: getLogMessages
+      responses:
+        '200':
+          description: successful operation
+          x-gulp-openapi-code-generator-outcome: success
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogMessageResponse'
+          
+        '400':
+          description: Invalid data supplied
+          x-gulp-openapi-code-generator-outcome: badRequestError
+        '500':
+          x-gulp-openapi-code-generator-outcome: serverError
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '501':
+          description: Rest API not supported yet
+          x-gulp-openapi-code-generator-outcome: notSupportedError
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
 
 components:
   schemas:
@@ -843,6 +1301,7 @@ components:
       xml:
         name: order
       type: object
+
     Customer:
       properties:
         id:
@@ -862,8 +1321,18 @@ components:
       xml:
         name: customer
       type: object
+
     Address:
+      required:
+        - street
+        - city
+        - state
+        - zip
       properties:
+        id:
+          type: integer
+          format: int64
+          example: 100
         street:
           type: string
           example: '437 Lytton'
@@ -879,6 +1348,7 @@ components:
       xml:
         name: address
       type: object
+
     Category:
       properties:
         id:
@@ -891,13 +1361,14 @@ components:
       xml:
         name: category
       type: object
+
     User:
       properties:
         id:
           type: integer
           format: int64
           example: 10
-        username:
+        userName:
           type: string
           example: 'theUser'
         firstName:
@@ -915,6 +1386,12 @@ components:
         phone:
           type: string
           example: '12345'
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
         userStatus:
           type: integer
           format: int32
@@ -923,6 +1400,7 @@ components:
       xml:
         name: user
       type: object
+
     Tag:
       properties:
         id:
@@ -933,10 +1411,11 @@ components:
       xml:
         name: tag
       type: object
+
     Pet:
       required:
         - name
-        - photoUrls
+        - status
       properties:
         id:
           type: integer
@@ -970,58 +1449,90 @@ components:
             - available
             - pending
             - sold
+            - unknown
       xml:
         name: pet
       type: object
-    ApiResponse:
+
+    LogMessageEntry:
+      description: a single log message entry
+      type: object
       properties:
-        code:
+        id:
           type: integer
-          format: int32
-        type:
+          format: int64
+        userName:
+          type: string
+        loggedDate:
+          type: string
+          format: date-time
+        level:
           type: string
         message:
           type: string
-      xml:
-        name: '##default'
-      type: object
+
+    LogMessageResponse:
+      description: response to a request for message logs call
+      required:
+        - message
+        - modelLogs
+      properties:
+        modelLogs:
+          type: array
+          items:
+            $ref: '#/components/schemas/LogMessageEntry'
+          description: the array of logs message entry returned
+
+    ErrorResponse:
+      description: An error has occurred in the system and this object contains information to diagnose the problem.
+      required:
+        - userMessage
+      properties:
+        developerMessage:
+          description: Message for the developer to use to diagnose the error.
+          type: string
+        userMessage:
+          description: Message for the end user to use to diagnose the error.
+          type: string
+        moreInfoMessage:
+          description: More info message to redirect user to see some web page or document if applicable.
+          type: string
+        debugMessage:
+          description: Error detail. Only returned if service is in diagnostic mode.
+          type: string
+
   requestBodies:
     Pet:
-      content:
-        application/json:
-          schema:
-            $ref: '#/components/schemas/Pet'
-        application/x-www-form-urlencoded:
-          schema:
-            $ref: '#/components/schemas/Pet'
       description: Pet object that needs to be added to the store
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Pet'
+
     UserArray:
+      description: List of user object
       content:
         application/json:
           schema:
             type: array
             items:
               $ref: '#/components/schemas/User'
-        application/x-www-form-urlencoded:
-          schema:
-            type: array
-            items:
-              $ref: '#/components/schemas/User'
-      description: List of user object
-  securitySchemes:
-    petstoreAuthorise:
-      type: oauth2
-      flows:
-        #implicit:
-        #authorizationCode:
-        password:
-          # authorizationUrl: 'https://localhost:9443/oauth2/authorize'
-          tokenUrl: 'http://localhost:9443/oauth2/token'
-          scopes:
-            write:pets: Grant wite access 
-            read:pets: Grant read access 
-            admin:pets: Grants admin access to admin operations
-#    api_key:
-#      type: apiKey
-#      name: api_key
-#      in: header
+
+#   securitySchemes:
+#     petstoreAuthorise:
+#       type: oauth2
+#       flows:
+#         #implicit:
+#         #authorizationCode:
+#         password:
+#           # authorizationUrl: 'https://localhost:9443/oauth2/authorize'
+#           tokenUrl: 'http://localhost:9443/oauth2/token'
+#           scopes:
+#             write:pets: Grant wite access 
+#             read:pets: Grant read access 
+#             admin:pets: Grants admin access to admin operations
+# #    api_key:
+# #      type: apiKey
+# #      name: api_key
+# #      in: header
+
