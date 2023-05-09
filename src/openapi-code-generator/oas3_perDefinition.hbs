@@ -30,7 +30,7 @@ class {{definitionName}} {
                 {{#eq type "array"}}
     this._{{@key}} = [];
                     {{#inArray ../required @key}}
-    if ((input.{{@key}} === null) || (input.{{@key}} === undefined) {
+    if ((input.{{@key}} === null) || (input.{{@key}} === undefined)) {
       throw new Error('Cannot initialize. The {{@key}} array cannot be null or undefined');
     }
     for (const subItem of input.{{@key}}) {
